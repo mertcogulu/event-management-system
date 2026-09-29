@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.service;
 
 import com.mertcogulu.eventmanagement.entity.Event;
+import com.mertcogulu.eventmanagement.exception.InvalidEventDateException;
 import com.mertcogulu.eventmanagement.repository.EventRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ public class EventService {
     }
 
     public Event createEvent(Event event) {
+        validateEventDates(event);
         return eventRepository.save(event);
     }
 
@@ -29,6 +31,8 @@ public class EventService {
     }
 
     public Optional<Event> updateEvent(Long id, Event updatedEvent) {
+        validateEventDates(updatedEvent);
+
         return eventRepository.findById(id)
                 .map(existingEvent -> {
                     existingEvent.setTitle(updatedEvent.getTitle());
@@ -40,6 +44,12 @@ public class EventService {
 
                     return eventRepository.save(existingEvent);
                 });
+    }
+
+    private void validateEventDates(Event event) {
+        if (!event.getEndDate().isAfter(event.getStartDate())) {
+            throw new InvalidEventDateException("End date must be after start date");
+        }
     }
 
     public void deleteEvent(Long id) {
