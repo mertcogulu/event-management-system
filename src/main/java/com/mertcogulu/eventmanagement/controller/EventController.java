@@ -34,6 +34,15 @@ public class EventController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Event> updateEvent(
+            @PathVariable Long id,
+            @RequestBody Event event) {
+        return eventService.updateEvent(id, event)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
         eventService.deleteEvent(id);
