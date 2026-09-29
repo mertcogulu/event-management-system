@@ -28,6 +28,20 @@ public class EventService {
         return eventRepository.findById(id);
     }
 
+    public Optional<Event> updateEvent(Long id, Event updatedEvent) {
+        return eventRepository.findById(id)
+                .map(existingEvent -> {
+                    existingEvent.setTitle(updatedEvent.getTitle());
+                    existingEvent.setDescription(updatedEvent.getDescription());
+                    existingEvent.setLocation(updatedEvent.getLocation());
+                    existingEvent.setStartDate(updatedEvent.getStartDate());
+                    existingEvent.setEndDate(updatedEvent.getEndDate());
+                    existingEvent.setCapacity(updatedEvent.getCapacity());
+
+                    return eventRepository.save(existingEvent);
+                });
+    }
+
     public void deleteEvent(Long id) {
         eventRepository.deleteById(id);
     }
