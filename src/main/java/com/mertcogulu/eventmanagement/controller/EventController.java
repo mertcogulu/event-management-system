@@ -2,6 +2,7 @@ package com.mertcogulu.eventmanagement.controller;
 
 import com.mertcogulu.eventmanagement.entity.Event;
 import com.mertcogulu.eventmanagement.service.EventService;
+import com.mertcogulu.eventmanagement.dto.EventRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -21,8 +22,8 @@ public class EventController {
     @PostMapping
     public Event createEvent(
             @Valid
-            @RequestBody Event event) {
-        return eventService.createEvent(event);
+            @RequestBody EventRequest request) {
+        return eventService.createEvent(request);
     }
 
     @GetMapping
@@ -41,8 +42,8 @@ public class EventController {
     public ResponseEntity<Event> updateEvent(
             @PathVariable Long id,
             @Valid
-            @RequestBody Event event) {
-        return eventService.updateEvent(id, event)
+            @RequestBody EventRequest request) {
+        return eventService.updateEvent(id, request)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
