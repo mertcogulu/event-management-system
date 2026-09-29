@@ -4,6 +4,7 @@ import com.mertcogulu.eventmanagement.entity.Event;
 import com.mertcogulu.eventmanagement.service.EventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -18,7 +19,9 @@ public class EventController {
     }
 
     @PostMapping
-    public Event createEvent(@RequestBody Event event) {
+    public Event createEvent(
+            @Valid
+            @RequestBody Event event) {
         return eventService.createEvent(event);
     }
 
@@ -37,6 +40,7 @@ public class EventController {
     @PutMapping("/{id}")
     public ResponseEntity<Event> updateEvent(
             @PathVariable Long id,
+            @Valid
             @RequestBody Event event) {
         return eventService.updateEvent(id, event)
                 .map(ResponseEntity::ok)
