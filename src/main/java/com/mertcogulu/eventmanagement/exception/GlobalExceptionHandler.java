@@ -46,4 +46,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
+
+    @ExceptionHandler(EventNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleEventNotFound(
+            EventNotFoundException exception) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(DuplicateApplicationException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateApplication(
+            DuplicateApplicationException exception) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
 }
