@@ -40,6 +40,20 @@ public class ApplicationController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/event/{eventId}")
+    public List<Application> getApplicationsByEventId(
+            @PathVariable Long eventId) {
+
+        return applicationService.getApplicationsByEventId(eventId);
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<Application> getApplicationsByUserId(
+            @PathVariable Long userId) {
+
+        return applicationService.getApplicationsByUserId(userId);
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<Application> updateApplicationStatus(
             @PathVariable Long id,
