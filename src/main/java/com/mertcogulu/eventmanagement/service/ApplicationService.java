@@ -12,6 +12,7 @@ import com.mertcogulu.eventmanagement.repository.ApplicationRepository;
 import com.mertcogulu.eventmanagement.repository.EventRepository;
 import com.mertcogulu.eventmanagement.repository.UserRepository;
 import com.mertcogulu.eventmanagement.exception.EventNotFoundException;
+import com.mertcogulu.eventmanagement.exception.EventCapacityExceededException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -83,7 +84,22 @@ public class ApplicationService {
             ApplicationStatusRequest request) {
         return applicationRepository.findById(id)
                 .map(application -> {
+
+                    if (request.getStatus() == ApplicationStatus.ACCEPTED
+                            && application.getStatus() != ApplicationStatus.ACCEPTED) {
+                        Long eventId = application.getEvent().getId();
+                        long acceptedCount =
+                                applicationRepository.countByEventIdAndStatus(
+                                        eventId,
+                                        ApplicationStatus.ACCEPTED);
+
+                        if (acceptedCount >= application.getEvent().getCapacity()) {
+                            throw new EventCapacityExceededException("Event capacity has been reached");
+                        }
+                    }
+
                     application.setStatus(request.getStatus());
+
                     return applicationRepository.save(application);
                 });
     }
