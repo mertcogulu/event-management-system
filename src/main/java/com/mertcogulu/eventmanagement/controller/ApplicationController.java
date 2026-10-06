@@ -3,6 +3,7 @@ package com.mertcogulu.eventmanagement.controller;
 import com.mertcogulu.eventmanagement.dto.ApplicationRequest;
 import com.mertcogulu.eventmanagement.dto.ApplicationStatusRequest;
 import com.mertcogulu.eventmanagement.entity.Application;
+import com.mertcogulu.eventmanagement.entity.ApplicationStatus;
 import com.mertcogulu.eventmanagement.service.ApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,15 @@ public class ApplicationController {
             @PathVariable Long eventId) {
 
         return applicationService.getApplicationsByEventId(eventId);
+    }
+
+    @GetMapping("/event/{eventId}/status/{status}")
+    public List<Application> getApplicationsByEventIdAndStatus(
+            @PathVariable Long eventId,
+            @PathVariable ApplicationStatus status) {
+
+        return applicationService.getApplicationsByEventIdAndStatus(eventId, status);
+
     }
 
     @GetMapping("/user/{userId}")
