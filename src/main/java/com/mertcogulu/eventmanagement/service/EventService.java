@@ -9,6 +9,7 @@ import com.mertcogulu.eventmanagement.dto.EventRequest;
 import com.mertcogulu.eventmanagement.entity.User;
 import com.mertcogulu.eventmanagement.exception.UserNotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +49,18 @@ public class EventService {
 
     public List<Event> getAllEvents() {
         return eventRepository.findAll();
+    }
+
+    public List<Event> getEventsByLocation(String location) {
+        return eventRepository.findByLocationIgnoreCase(location);
+    }
+
+    public List<Event> getEventsByTitle(String title) {
+        return eventRepository.findByTitleContainingIgnoreCase(title);
+    }
+
+    public List<Event> getEventsAfterDate(LocalDateTime date) {
+        return eventRepository.findByStartDateAfter(date);
     }
 
     public Optional<Event> getEventById(Long id) {

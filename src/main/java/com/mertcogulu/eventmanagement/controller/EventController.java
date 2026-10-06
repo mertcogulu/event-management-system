@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -36,6 +37,21 @@ public class EventController {
         return eventService.getEventById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/location/{location}")
+    public List<Event> getEventsByLocation(@PathVariable String location) {
+        return eventService.getEventsByLocation(location);
+    }
+
+    @GetMapping("/title/{title}")
+    public List<Event> getEventsByTitle(@PathVariable String title) {
+        return eventService.getEventsByTitle(title);
+    }
+    
+    @GetMapping("/after/{date}")
+    public List<Event> getEventsAfterDate(@PathVariable LocalDateTime date) {
+        return eventService.getEventsAfterDate(date);
     }
 
     @PutMapping("/{id}")
