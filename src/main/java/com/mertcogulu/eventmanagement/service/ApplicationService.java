@@ -71,6 +71,10 @@ public class ApplicationService {
         return applicationRepository.findByEventId(eventId);
     }
 
+    public List<Application> getApplicationsByEventIdAndStatus(Long eventId, ApplicationStatus status) {
+        return applicationRepository.findByEventIdAndStatus(eventId, status);
+    }
+
     public List<Application> getApplicationsByUserId(Long userId) {
         return applicationRepository.findByUserId(userId);
     }
