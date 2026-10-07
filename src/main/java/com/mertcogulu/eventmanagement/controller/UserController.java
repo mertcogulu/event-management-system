@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.controller;
 
 
+import com.mertcogulu.eventmanagement.dto.UserResponse;
 import com.mertcogulu.eventmanagement.entity.User;
 import com.mertcogulu.eventmanagement.service.UserService;
 import jakarta.validation.Valid;
@@ -20,19 +21,19 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(
+    public UserResponse createUser(
             @Valid
             @RequestBody User user) {
         return userService.createUser(user);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserResponse> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -40,7 +41,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
             @Valid
             @RequestBody User user) {

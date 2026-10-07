@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.controller;
 
 import com.mertcogulu.eventmanagement.dto.ApplicationRequest;
+import com.mertcogulu.eventmanagement.dto.ApplicationResponse;
 import com.mertcogulu.eventmanagement.dto.ApplicationStatusRequest;
 import com.mertcogulu.eventmanagement.entity.Application;
 import com.mertcogulu.eventmanagement.entity.ApplicationStatus;
@@ -22,7 +23,7 @@ public class ApplicationController {
     }
 
     @PostMapping
-    public Application createApplication(
+    public ApplicationResponse createApplication(
             @Valid
             @RequestBody ApplicationRequest request) {
 
@@ -30,26 +31,26 @@ public class ApplicationController {
     }
 
     @GetMapping
-    public List<Application> getAllApplications() {
+    public List<ApplicationResponse> getAllApplications() {
         return applicationService.getAllApplications();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Application> getApplicationById(@PathVariable Long id) {
+    public ResponseEntity<ApplicationResponse> getApplicationById(@PathVariable Long id) {
         return applicationService.getApplicationById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/event/{eventId}")
-    public List<Application> getApplicationsByEventId(
+    public List<ApplicationResponse> getApplicationsByEventId(
             @PathVariable Long eventId) {
 
         return applicationService.getApplicationsByEventId(eventId);
     }
 
     @GetMapping("/event/{eventId}/status/{status}")
-    public List<Application> getApplicationsByEventIdAndStatus(
+    public List<ApplicationResponse> getApplicationsByEventIdAndStatus(
             @PathVariable Long eventId,
             @PathVariable ApplicationStatus status) {
 
@@ -58,14 +59,14 @@ public class ApplicationController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<Application> getApplicationsByUserId(
+    public List<ApplicationResponse> getApplicationsByUserId(
             @PathVariable Long userId) {
 
         return applicationService.getApplicationsByUserId(userId);
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Application> updateApplicationStatus(
+    public ResponseEntity<ApplicationResponse> updateApplicationStatus(
             @PathVariable Long id,
             @Valid
             @RequestBody ApplicationStatusRequest request) {

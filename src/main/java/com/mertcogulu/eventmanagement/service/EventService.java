@@ -1,5 +1,6 @@
 package com.mertcogulu.eventmanagement.service;
 
+import com.mertcogulu.eventmanagement.dto.EventResponse;
 import com.mertcogulu.eventmanagement.entity.Event;
 import com.mertcogulu.eventmanagement.exception.InvalidEventDateException;
 import com.mertcogulu.eventmanagement.repository.EventRepository;
@@ -26,7 +27,7 @@ public class EventService {
         this.userRepository = userRepository;
     }
 
-    public Event createEvent(EventRequest request) {
+    public EventResponse createEvent(EventRequest request) {
 
         User organizer = userRepository.findById(request.getOrganizerId())
                         .orElseThrow(() -> new UserNotFoundException(
@@ -44,30 +45,45 @@ public class EventService {
         event.setOrganizer(organizer);
 
         validateEventDates(event);
-        return eventRepository.save(event);
+
+        Event savedEvent = eventRepository.save(event);
+        return mapToEventResponse(savedEvent);
     }
 
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+    public List<EventResponse> getAllEvents() {
+        return eventRepository.findAll()
+                .stream()
+                .map(this::mapToEventResponse)
+                .toList();
     }
 
-    public List<Event> getEventsByLocation(String location) {
-        return eventRepository.findByLocationIgnoreCase(location);
+    public List<EventResponse> getEventsByLocation(String location) {
+        return eventRepository.findByLocationIgnoreCase(location)
+                .stream()
+                .map(this::mapToEventResponse)
+                .toList();
     }
 
-    public List<Event> getEventsByTitle(String title) {
-        return eventRepository.findByTitleContainingIgnoreCase(title);
+    public List<EventResponse> getEventsByTitle(String title) {
+        return eventRepository.findByTitleContainingIgnoreCase(title)
+                .stream()
+                .map(this::mapToEventResponse)
+                .toList();
     }
 
-    public List<Event> getEventsAfterDate(LocalDateTime date) {
-        return eventRepository.findByStartDateAfter(date);
+    public List<EventResponse> getEventsAfterDate(LocalDateTime date) {
+        return eventRepository.findByStartDateAfter(date)
+                .stream()
+                .map(this::mapToEventResponse)
+                .toList();
     }
 
-    public Optional<Event> getEventById(Long id) {
-        return eventRepository.findById(id);
+    public Optional<EventResponse> getEventById(Long id) {
+        return eventRepository.findById(id)
+                .map(this::mapToEventResponse);
     }
 
-    public Optional<Event> updateEvent(Long id, EventRequest request) {
+    public Optional<EventResponse> updateEvent(Long id, EventRequest request) {
 
         User organizer = userRepository.findById(request.getOrganizerId())
                 .orElseThrow(() -> new UserNotFoundException(
@@ -86,7 +102,8 @@ public class EventService {
 
                     validateEventDates(existingEvent);
 
-                    return eventRepository.save(existingEvent);
+                    Event savedEvent = eventRepository.save(existingEvent);
+                    return mapToEventResponse(savedEvent);
                 });
     }
 
@@ -94,6 +111,24 @@ public class EventService {
         if (!event.getEndDate().isAfter(event.getStartDate())) {
             throw new InvalidEventDateException("End date must be after start date");
         }
+    }
+
+    private EventResponse mapToEventResponse(Event event) {
+
+        User organizer = event.getOrganizer();
+
+        return new EventResponse(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getLocation(),
+                event.getStartDate(),
+                event.getEndDate(),
+                event.getCapacity(),
+                organizer != null ? organizer.getId() : null,
+                organizer != null ? organizer.getFirstName() : null,
+                organizer != null ? organizer.getLastName() : null
+        );
     }
 
     public void deleteEvent(Long id) {
