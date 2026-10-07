@@ -1,6 +1,6 @@
 package com.mertcogulu.eventmanagement.controller;
 
-import com.mertcogulu.eventmanagement.entity.Event;
+import com.mertcogulu.eventmanagement.dto.EventResponse;
 import com.mertcogulu.eventmanagement.service.EventService;
 import com.mertcogulu.eventmanagement.dto.EventRequest;
 import org.springframework.http.ResponseEntity;
@@ -21,41 +21,41 @@ public class EventController {
     }
 
     @PostMapping
-    public Event createEvent(
+    public EventResponse createEvent(
             @Valid
             @RequestBody EventRequest request) {
         return eventService.createEvent(request);
     }
 
     @GetMapping
-    public List<Event> getAllEvents() {
+    public List<EventResponse> getAllEvents() {
         return eventService.getAllEvents();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Event> getEventById(@PathVariable Long id) {
+    public ResponseEntity<EventResponse> getEventById(@PathVariable Long id) {
         return eventService.getEventById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/location/{location}")
-    public List<Event> getEventsByLocation(@PathVariable String location) {
+    public List<EventResponse> getEventsByLocation(@PathVariable String location) {
         return eventService.getEventsByLocation(location);
     }
 
     @GetMapping("/title/{title}")
-    public List<Event> getEventsByTitle(@PathVariable String title) {
+    public List<EventResponse> getEventsByTitle(@PathVariable String title) {
         return eventService.getEventsByTitle(title);
     }
     
     @GetMapping("/after/{date}")
-    public List<Event> getEventsAfterDate(@PathVariable LocalDateTime date) {
+    public List<EventResponse> getEventsAfterDate(@PathVariable LocalDateTime date) {
         return eventService.getEventsAfterDate(date);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Event> updateEvent(
+    public ResponseEntity<EventResponse> updateEvent(
             @PathVariable Long id,
             @Valid
             @RequestBody EventRequest request) {

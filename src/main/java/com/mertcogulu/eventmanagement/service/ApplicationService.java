@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.service;
 
 import com.mertcogulu.eventmanagement.dto.ApplicationRequest;
+import com.mertcogulu.eventmanagement.dto.ApplicationResponse;
 import com.mertcogulu.eventmanagement.dto.ApplicationStatusRequest;
 import com.mertcogulu.eventmanagement.entity.Application;
 import com.mertcogulu.eventmanagement.entity.ApplicationStatus;
@@ -34,7 +35,7 @@ public class ApplicationService {
         this.eventRepository = eventRepository;
     }
 
-    public Application createApplication(ApplicationRequest request) {
+    public ApplicationResponse createApplication(ApplicationRequest request) {
 
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(
@@ -60,30 +61,44 @@ public class ApplicationService {
         application.setEvent(event);
         application.setStatus(ApplicationStatus.PENDING);
 
-        return applicationRepository.save(application);
+        Application savedApplication = applicationRepository.save(application);
+        return mapToApplicationResponse(savedApplication);
     }
 
-    public List<Application> getAllApplications() {
-        return applicationRepository.findAll();
+    public List<ApplicationResponse> getAllApplications() {
+        return applicationRepository.findAll()
+                .stream()
+                .map(this::mapToApplicationResponse)
+                .toList();
     }
 
-    public List<Application> getApplicationsByEventId(Long eventId) {
-        return applicationRepository.findByEventId(eventId);
+    public List<ApplicationResponse> getApplicationsByEventId(Long eventId) {
+        return applicationRepository.findByEventId(eventId)
+                .stream()
+                .map(this::mapToApplicationResponse)
+                .toList();
     }
 
-    public List<Application> getApplicationsByEventIdAndStatus(Long eventId, ApplicationStatus status) {
-        return applicationRepository.findByEventIdAndStatus(eventId, status);
+    public List<ApplicationResponse> getApplicationsByEventIdAndStatus(Long eventId, ApplicationStatus status) {
+        return applicationRepository.findByEventIdAndStatus(eventId, status)
+                .stream()
+                .map(this::mapToApplicationResponse)
+                .toList();
     }
 
-    public List<Application> getApplicationsByUserId(Long userId) {
-        return applicationRepository.findByUserId(userId);
+    public List<ApplicationResponse> getApplicationsByUserId(Long userId) {
+        return applicationRepository.findByUserId(userId)
+                .stream()
+                .map(this::mapToApplicationResponse)
+                .toList();
     }
 
-    public Optional<Application> getApplicationById(Long id) {
-        return applicationRepository.findById(id);
+    public Optional<ApplicationResponse> getApplicationById(Long id) {
+        return applicationRepository.findById(id)
+                .map(this::mapToApplicationResponse);
     }
 
-    public Optional<Application> updateApplicationStatus(
+    public Optional<ApplicationResponse> updateApplicationStatus(
             Long id,
             ApplicationStatusRequest request) {
         return applicationRepository.findById(id)
@@ -104,8 +119,26 @@ public class ApplicationService {
 
                     application.setStatus(request.getStatus());
 
-                    return applicationRepository.save(application);
+                    Application savedApplication = applicationRepository.save(application);
+                    return mapToApplicationResponse(savedApplication);
+
                 });
+    }
+
+    private ApplicationResponse mapToApplicationResponse(Application application) {
+
+        User user = application.getUser();
+        Event event = application.getEvent();
+
+        return new ApplicationResponse(
+                application.getId(),
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                event.getId(),
+                event.getTitle(),
+                application.getStatus()
+        );
     }
 
     public void deleteApplication(Long id) {
