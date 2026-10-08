@@ -3,6 +3,7 @@ package com.mertcogulu.eventmanagement.service;
 import com.mertcogulu.eventmanagement.dto.UserResponse;
 import com.mertcogulu.eventmanagement.entity.User;
 import com.mertcogulu.eventmanagement.repository.UserRepository;
+import com.mertcogulu.eventmanagement.exception.DuplicateEmailException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,12 @@ public class UserService {
     }
 
     public UserResponse createUser(User user) {
+
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new DuplicateEmailException(
+                    "Email already in use"
+            );
+        }
         User savedUser = userRepository.save(user);
         return mapToUserResponse(savedUser);
     }
@@ -37,12 +44,18 @@ public class UserService {
     public Optional<UserResponse> updateUser(Long id, User updatedUser) {
         return userRepository.findById(id)
                 .map(existingUser -> {
+
+                    if (userRepository.existsByEmailAndIdNot(updatedUser.getEmail(), id)) {
+                        throw new DuplicateEmailException(
+                                "Email already in use"
+                        );
+                    }
                     existingUser.setFirstName(updatedUser.getFirstName());
                     existingUser.setLastName(updatedUser.getLastName());
                     existingUser.setEmail(updatedUser.getEmail());
 
                     User savedUser = userRepository.save(existingUser);
-                    return mapToUserResponse(existingUser);
+                    return mapToUserResponse(savedUser);
                 });
     }
 
