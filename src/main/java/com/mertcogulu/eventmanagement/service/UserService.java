@@ -53,6 +53,7 @@ public class UserService {
                     existingUser.setFirstName(updatedUser.getFirstName());
                     existingUser.setLastName(updatedUser.getLastName());
                     existingUser.setEmail(updatedUser.getEmail());
+                    existingUser.setRole(updatedUser.getRole());
 
                     User savedUser = userRepository.save(existingUser);
                     return mapToUserResponse(savedUser);
@@ -60,7 +61,11 @@ public class UserService {
     }
 
     private UserResponse mapToUserResponse(User user) {
-        return new UserResponse(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
+        return new UserResponse(user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getRole());
     }
 
     public void deleteUser(Long id) {

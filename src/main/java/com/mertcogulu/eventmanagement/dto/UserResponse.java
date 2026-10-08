@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.dto;
 
 
+import com.mertcogulu.eventmanagement.entity.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,4 +13,5 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private UserRole role;
 }
