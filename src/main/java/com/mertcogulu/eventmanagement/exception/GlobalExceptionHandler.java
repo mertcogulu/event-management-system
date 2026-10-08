@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -82,5 +83,15 @@ public class GlobalExceptionHandler {
         error.put("error", exception.getMessage());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException exception) {
+
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Invalid request value");
+
+        return ResponseEntity.badRequest().body(error);
     }
 }

@@ -3,6 +3,7 @@ package com.mertcogulu.eventmanagement.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,4 +33,9 @@ public class User {
     @Email(message = "Email must be valid")
     @Column(nullable = false, unique = true)
     private String email;
+
+    @NotNull(message = "Role is required")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
 }
