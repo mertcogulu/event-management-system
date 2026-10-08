@@ -1,8 +1,9 @@
 package com.mertcogulu.eventmanagement.controller;
 
 
+import com.mertcogulu.eventmanagement.dto.UserCreateRequest;
 import com.mertcogulu.eventmanagement.dto.UserResponse;
-import com.mertcogulu.eventmanagement.entity.User;
+import com.mertcogulu.eventmanagement.dto.UserUpdateRequest;
 import com.mertcogulu.eventmanagement.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,8 @@ public class UserController {
     @PostMapping
     public UserResponse createUser(
             @Valid
-            @RequestBody User user) {
-        return userService.createUser(user);
+            @RequestBody UserCreateRequest request) {
+        return userService.createUser(request);
     }
 
     @GetMapping
@@ -44,9 +45,9 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
             @Valid
-            @RequestBody User user) {
+            @RequestBody UserUpdateRequest request) {
 
-        return userService.updateUser(id, user)
+        return userService.updateUser(id, request)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
