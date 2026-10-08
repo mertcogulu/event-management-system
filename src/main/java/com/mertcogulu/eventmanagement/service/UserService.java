@@ -1,9 +1,12 @@
 package com.mertcogulu.eventmanagement.service;
 
+import com.mertcogulu.eventmanagement.dto.UserCreateRequest;
 import com.mertcogulu.eventmanagement.dto.UserResponse;
+import com.mertcogulu.eventmanagement.dto.UserUpdateRequest;
 import com.mertcogulu.eventmanagement.entity.User;
 import com.mertcogulu.eventmanagement.repository.UserRepository;
 import com.mertcogulu.eventmanagement.exception.DuplicateEmailException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,18 +16,32 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponse createUser(User user) {
+    public UserResponse createUser(UserCreateRequest request) {
 
-        if (userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException(
                     "Email already in use"
             );
         }
+
+        User user = new User();
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+
         User savedUser = userRepository.save(user);
         return mapToUserResponse(savedUser);
     }
@@ -41,19 +58,19 @@ public class UserService {
                 .map(this::mapToUserResponse);
     }
 
-    public Optional<UserResponse> updateUser(Long id, User updatedUser) {
+    public Optional<UserResponse> updateUser(Long id, UserUpdateRequest request) {
         return userRepository.findById(id)
                 .map(existingUser -> {
 
-                    if (userRepository.existsByEmailAndIdNot(updatedUser.getEmail(), id)) {
+                    if (userRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
                         throw new DuplicateEmailException(
                                 "Email already in use"
                         );
                     }
-                    existingUser.setFirstName(updatedUser.getFirstName());
-                    existingUser.setLastName(updatedUser.getLastName());
-                    existingUser.setEmail(updatedUser.getEmail());
-                    existingUser.setRole(updatedUser.getRole());
+                    existingUser.setFirstName(request.getFirstName());
+                    existingUser.setLastName(request.getLastName());
+                    existingUser.setEmail(request.getEmail());
+                    existingUser.setRole(request.getRole());
 
                     User savedUser = userRepository.save(existingUser);
                     return mapToUserResponse(savedUser);
