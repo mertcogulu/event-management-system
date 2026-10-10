@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.auth.controller;
 
 import com.mertcogulu.eventmanagement.auth.dto.LoginRequest;
+import com.mertcogulu.eventmanagement.auth.dto.LoginResponse;
 import com.mertcogulu.eventmanagement.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
-        authService.login(request);
+        String token = authService.login(request);
 
-        return ResponseEntity.ok("Successfully logged in");
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 }

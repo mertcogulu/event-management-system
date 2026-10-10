@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.auth.service;
 
 import com.mertcogulu.eventmanagement.auth.dto.LoginRequest;
+import com.mertcogulu.eventmanagement.auth.jwt.JwtService;
 import com.mertcogulu.eventmanagement.exception.InvalidCredentialsException;
 import com.mertcogulu.eventmanagement.user.entity.User;
 import com.mertcogulu.eventmanagement.user.repository.UserRepository;
@@ -12,16 +13,19 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
-    public boolean login(LoginRequest request) {
+    public String login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElse(null);
@@ -34,6 +38,6 @@ public class AuthService {
 
             throw new InvalidCredentialsException("Invalid email or password");
         }
-        return true;
+        return jwtService.generateToken(user.getEmail());
     }
 }
