@@ -39,6 +39,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/events").hasAnyRole("ADMIN", "ORGANIZER")
+                        .requestMatchers(HttpMethod.PUT, "/api/events/*").hasAnyRole("ADMIN", "ORGANIZER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/events/*").hasAnyRole("ADMIN", "ORGANIZER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
