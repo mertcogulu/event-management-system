@@ -4,11 +4,14 @@ import com.mertcogulu.eventmanagement.event.dto.EventResponse;
 import com.mertcogulu.eventmanagement.event.entity.Event;
 import com.mertcogulu.eventmanagement.exception.InvalidEventDateException;
 import com.mertcogulu.eventmanagement.event.repository.EventRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.mertcogulu.eventmanagement.user.repository.UserRepository;
 import com.mertcogulu.eventmanagement.event.dto.EventRequest;
 import com.mertcogulu.eventmanagement.user.entity.User;
 import com.mertcogulu.eventmanagement.exception.UserNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +31,23 @@ public class EventService {
     }
 
     public EventResponse createEvent(EventRequest request) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
+        String currentUserEmail = authentication.getName();
+
+        if (!isAdmin) {
+            User currentUser = userRepository.findByEmail(currentUserEmail)
+                    .orElseThrow(() -> new UserNotFoundException("Authenticated user not found"));
+
+            if (!currentUser.getId().equals(request.getOrganizerId())) {
+                throw new org.springframework.security.access.AccessDeniedException("You can only create events for yourself");
+            }
+        }
 
         User organizer = userRepository.findById(request.getOrganizerId())
                         .orElseThrow(() -> new UserNotFoundException(
@@ -85,13 +105,40 @@ public class EventService {
 
     public Optional<EventResponse> updateEvent(Long id, EventRequest request) {
 
-        User organizer = userRepository.findById(request.getOrganizerId())
-                .orElseThrow(() -> new UserNotFoundException(
-                        "User not found with id " + request.getOrganizerId()
-                ));
-
         return eventRepository.findById(id)
                 .map(existingEvent -> {
+
+                    Authentication authentication =
+                            SecurityContextHolder.getContext().getAuthentication();
+
+                    boolean isAdmin = authentication.getAuthorities()
+                            .stream()
+                            .anyMatch(authority ->
+                                    authority.getAuthority().equals("ROLE_ADMIN"));
+
+                    String currentUserEmail = authentication.getName();
+
+                    if (!isAdmin &&
+                            !existingEvent.getOrganizer().getEmail().equals(currentUserEmail)) {
+
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                "You can only update your own events"
+                        );
+                    }
+
+                    User organizer = userRepository.findById(request.getOrganizerId())
+                            .orElseThrow(() -> new UserNotFoundException(
+                                    "User not found with id " + request.getOrganizerId()
+                            ));
+
+                    if (!isAdmin &&
+                            !existingEvent.getOrganizer().getId().equals(organizer.getId())) {
+
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                "Only ADMIN can change the event organizer"
+                        );
+                    }
+
                     existingEvent.setTitle(request.getTitle());
                     existingEvent.setDescription(request.getDescription());
                     existingEvent.setLocation(request.getLocation());
@@ -132,6 +179,29 @@ public class EventService {
     }
 
     public void deleteEvent(Long id) {
-        eventRepository.deleteById(id);
+
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Event not found with id " + id
+                ));
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_ADMIN"));
+
+        String currentUserEmail = authentication.getName();
+
+        if (!isAdmin &&
+                !event.getOrganizer().getEmail().equals(currentUserEmail)) {
+
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You can only delete your own events");
+        }
+        eventRepository.delete(event);
     }
 }
