@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/registrations")
 public class RegistrationController {
@@ -31,5 +33,13 @@ public class RegistrationController {
         registrationService.cancelRegistration(registrationId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<RegistrationResponse>> getMyRegistrations() {
+
+        List<RegistrationResponse> registrations = registrationService.getMyRegistrations();
+
+        return ResponseEntity.ok(registrations);
     }
 }
