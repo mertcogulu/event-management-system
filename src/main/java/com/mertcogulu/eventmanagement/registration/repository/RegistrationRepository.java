@@ -3,6 +3,7 @@ package com.mertcogulu.eventmanagement.registration.repository;
 import com.mertcogulu.eventmanagement.registration.entity.Registration;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RegistrationRepository extends JpaRepository<Registration, Long> {
@@ -12,4 +13,8 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     long countByEventId(Long eventId);
 
     Optional<Registration> findByIdAndUserId(Long registrationId, Long userId);
+
+    List<Registration> findByUserId(Long userId);
+
+    List<Registration> findByEventId(Long eventId);
 }

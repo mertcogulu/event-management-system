@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class RegistrationService {
@@ -110,5 +111,70 @@ public class RegistrationService {
                         ));
 
         registrationRepository.delete(registration);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegistrationResponse> getMyRegistrations() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String currentUserEmail = authentication.getName();
+
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new UserNotFoundException("Authenticated user not found"));
+
+        List<Registration> registrations = registrationRepository.findByUserId(currentUser.getId());
+
+        return registrations.stream()
+                .map(registration -> new RegistrationResponse(
+                        registration.getId(),
+                        registration.getEvent().getId(),
+                        registration.getUser().getId(),
+                        registration.getRegisteredAt()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegistrationResponse> getEventParticipants(Long eventId) {
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Event not found with id " + eventId));
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String currentUserEmail = authentication.getName();
+
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "Authenticated user not found"));
+
+        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+        boolean isOrganizer = currentUser.getRole().name().equals("ORGANIZER");
+        boolean isEventOwner = event.getOrganizer() != null
+                && event.getOrganizer().getId().equals(currentUser.getId());
+
+        if (!isAdmin && !(isOrganizer && isEventOwner)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You are not authorized to view participants if this event"
+            );
+        }
+
+        List<Registration> registrations =
+                registrationRepository.findByEventId(eventId);
+
+        return registrations.stream()
+                .map(registration -> new RegistrationResponse(
+                        registration.getId(),
+                        registration.getEvent().getId(),
+                        registration.getUser().getId(),
+                        registration.getRegisteredAt()
+                ))
+                .toList();
     }
 }
