@@ -4,6 +4,7 @@ import com.mertcogulu.eventmanagement.event.entity.Event;
 import com.mertcogulu.eventmanagement.event.repository.EventRepository;
 import com.mertcogulu.eventmanagement.exception.UserNotFoundException;
 import com.mertcogulu.eventmanagement.registration.dto.RegistrationResponse;
+import com.mertcogulu.eventmanagement.registration.dto.RegistrationStatisticsResponse;
 import com.mertcogulu.eventmanagement.registration.entity.Registration;
 import com.mertcogulu.eventmanagement.registration.repository.RegistrationRepository;
 import com.mertcogulu.eventmanagement.user.entity.User;
@@ -176,5 +177,51 @@ public class RegistrationService {
                         registration.getRegisteredAt()
                 ))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RegistrationStatisticsResponse getEventStatistics(Long eventId) {
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Event not found with id " + eventId
+                ));
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String currentUserEmail = authentication.getName();
+
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "Authenticated user not found"
+                ));
+
+        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+        boolean isOrganizer = currentUser.getRole().name().equals("ORGANIZER");
+        boolean isEventOwner = event.getOrganizer() != null
+                && event.getOrganizer().getId().equals(currentUser.getId());
+
+        if (!isAdmin && !(isOrganizer && isEventOwner)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You are not authorized to view statistics for this event"
+            );
+        }
+
+        long registeredCount = registrationRepository.countByEventId(eventId);
+        long availableSpots = Math.max(0, event.getCapacity() - registeredCount);
+        double occupancyRate = event.getCapacity() > 0
+                ? (registeredCount * 100.0) / event.getCapacity()
+                : 0.0;
+
+        return new RegistrationStatisticsResponse(
+                event.getId(),
+                event.getCapacity(),
+                registeredCount,
+                availableSpots,
+                occupancyRate
+        );
     }
 }

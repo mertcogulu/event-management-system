@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/registrations/*").hasRole("PARTICIPANT")
                         .requestMatchers(HttpMethod.GET, "/api/registrations/my").hasRole("PARTICIPANT")
                         .requestMatchers(HttpMethod.GET, "/api/events/*/participants").hasAnyRole("ADMIN", "ORGANIZER")
+                        .requestMatchers(HttpMethod.GET, "/api/events/*/statistics").hasAnyRole("ADMIN", "ORGANIZER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

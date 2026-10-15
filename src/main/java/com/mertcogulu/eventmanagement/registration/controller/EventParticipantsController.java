@@ -1,6 +1,7 @@
 package com.mertcogulu.eventmanagement.registration.controller;
 
 import com.mertcogulu.eventmanagement.registration.dto.RegistrationResponse;
+import com.mertcogulu.eventmanagement.registration.dto.RegistrationStatisticsResponse;
 import com.mertcogulu.eventmanagement.registration.entity.Registration;
 import com.mertcogulu.eventmanagement.registration.service.RegistrationService;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +23,22 @@ public class EventParticipantsController {
     }
 
     @GetMapping("/{eventId}/participants")
-    public ResponseEntity<List<RegistrationResponse>> getEventParticipants(@PathVariable Long eventId) {
+    public ResponseEntity<List<RegistrationResponse>> getEventParticipants(
+            @PathVariable Long eventId) {
 
         List<RegistrationResponse> participants =
                 registrationService.getEventParticipants(eventId);
 
         return ResponseEntity.ok(participants);
+    }
+
+    @GetMapping("/{eventId}/statistics")
+    public ResponseEntity<RegistrationStatisticsResponse> getEventStatistics(
+            @PathVariable Long eventId) {
+
+        RegistrationStatisticsResponse statistics =
+                registrationService.getEventStatistics(eventId);
+
+        return ResponseEntity.ok(statistics);
     }
 }
