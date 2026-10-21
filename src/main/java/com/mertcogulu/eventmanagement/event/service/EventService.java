@@ -4,6 +4,7 @@ import com.mertcogulu.eventmanagement.event.dto.EventResponse;
 import com.mertcogulu.eventmanagement.event.entity.Event;
 import com.mertcogulu.eventmanagement.exception.InvalidEventDateException;
 import com.mertcogulu.eventmanagement.event.repository.EventRepository;
+import com.mertcogulu.eventmanagement.registration.repository.RegistrationRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.mertcogulu.eventmanagement.user.repository.UserRepository;
@@ -12,6 +13,7 @@ import com.mertcogulu.eventmanagement.user.entity.User;
 import com.mertcogulu.eventmanagement.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,12 +24,15 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final RegistrationRepository registrationRepository;
 
     public EventService(
             EventRepository eventRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            RegistrationRepository registrationRepository) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.registrationRepository = registrationRepository;
     }
 
     public EventResponse createEvent(EventRequest request) {
@@ -102,10 +107,10 @@ public class EventService {
         return eventRepository.findById(id)
                 .map(this::mapToEventResponse);
     }
-
+    @Transactional
     public Optional<EventResponse> updateEvent(Long id, EventRequest request) {
 
-        return eventRepository.findById(id)
+        return eventRepository.findWithLockById(id)
                 .map(existingEvent -> {
 
                     Authentication authentication =
@@ -136,6 +141,14 @@ public class EventService {
 
                         throw new org.springframework.security.access.AccessDeniedException(
                                 "Only ADMIN can change the event organizer"
+                        );
+                    }
+
+                    long registeredCount = registrationRepository.countByEventId(id);
+
+                    if (request.getCapacity() < registeredCount) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                HttpStatus.CONFLICT, "Event capacity cannot be less than the number of registered participants"
                         );
                     }
 
